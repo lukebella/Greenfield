@@ -1,0 +1,17 @@
+syntax = "proto3";
+package com.example.grpc;
+
+message MechanicRequest {
+  string ID = 1;
+  string address = 2;
+  int32 port = 3;
+  int64 timestamp = 4;
+}
+
+message MechanicResponse {
+  string response = 1;
+}
+
+service MechanicService {
+  rpc mechanic(MechanicRequest) returns (stream MechanicResponse);
+}

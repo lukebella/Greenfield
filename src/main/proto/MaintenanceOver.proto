@@ -1,0 +1,14 @@
+syntax = "proto3";
+package com.example.grpc;
+
+message MaintenanceOverRequest {
+  string ok = 1;
+}
+
+message MaintenanceOverResponse {
+  string received=1;
+}
+
+service MaintenanceOverService {
+  rpc maintenanceOver(MaintenanceOverRequest) returns (stream MaintenanceOverResponse);
+}

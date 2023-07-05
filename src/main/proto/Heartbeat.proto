@@ -1,0 +1,11 @@
+syntax = "proto3";
+package com.example.grpc;
+
+
+message HeartbeatRequest {}
+
+message HeartbeatResponse {}
+
+service HeartbeatService {
+  rpc heartbeat(HeartbeatRequest) returns (stream HeartbeatResponse);
+}
