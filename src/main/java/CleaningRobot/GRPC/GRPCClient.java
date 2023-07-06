@@ -91,7 +91,7 @@ public class GRPCClient {
                             new StreamObserver<GoodbyeResponse>() {
                                 public void onNext(GoodbyeResponse goodbyeResponse) {
                                     System.out.println("[FROM SERVER] " + goodbyeResponse.getResponse());
-                                    if (LaunchRobot.isFixRobot()) {  //TODO with Thread.JOIN I don't think is useful anymore
+                                    if (LaunchRobot.isFixRobot()) {
                                         System.out.println("Crashed robot, remove from the waiting list");
                                         MechanicServiceImpl.removeFromWaitingList(sr.getRobotList().get(index).getID());
                                         Maintenance.increaseConsensus();
@@ -168,7 +168,7 @@ public class GRPCClient {
     }
 
     //Tells to the other robots which robot is crashed
-    private void sendCrashedToAll(Robot cr) {
+    private synchronized void sendCrashedToAll(Robot cr) {
         //synchronized (sr.getRobotList()) {
             for (int robot = 0; robot < sr.getRobotList().size(); robot++) {
                 if (!(r.getID().equals(sr.getRobotList().get(robot).getID()))) {
@@ -258,6 +258,7 @@ public class GRPCClient {
 
     public void maintenanceOver() {
         synchronized (MechanicServiceImpl.getWaitingList()) {
+            System.out.println("GRPCClient::maintenanceOver :"+MechanicServiceImpl.getWaitingList());
             for (int robot = 0; robot < MechanicServiceImpl.getWaitingList().size(); robot++) {
                 System.out.println(MechanicServiceImpl.getWaitingList().get(robot));
                 if (!(r.getID().equals(MechanicServiceImpl.getWaitingList().get(robot).getID()))) {
@@ -266,13 +267,13 @@ public class GRPCClient {
                             ":" + MechanicServiceImpl.getWaitingList().get(robot).getPort()).usePlaintext().build();
                     MaintenanceOverServiceGrpc.MaintenanceOverServiceStub stub = MaintenanceOverServiceGrpc.newStub(channel);
                     int index = robot;
+
                     stub.maintenanceOver(MaintenanceOver.MaintenanceOverRequest.newBuilder()
                                     .setOk("OK")
                                     .build(),
                             new StreamObserver<MaintenanceOver.MaintenanceOverResponse>() {
                                 public void onNext(MaintenanceOver.MaintenanceOverResponse maintenanceOverResponse) {
-                                    System.out.println("Maintenance Over: Robot " + MechanicServiceImpl.getWaitingList().get(index).getID() + " complete fixing");
-                                    System.out.println("[FROM SERVER] " + maintenanceOverResponse.getReceived());
+
                                 }
 
                                 public void onError(Throwable throwable) {

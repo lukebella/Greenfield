@@ -63,8 +63,7 @@ public class LaunchRobot {
         simulator.start();
         avgConsumer.start();
         PollutionPublisher pp = new PollutionPublisher(r.getID(), District.getDistrict(sr.getCell()), avgConsumer.getAverageList());
-        //pp.start();  //TODO
-
+        pp.start();
         //Check heartbeats of the other robots
         SendHeartbeat sh = new SendHeartbeat(grpcClient);
         sh.start();

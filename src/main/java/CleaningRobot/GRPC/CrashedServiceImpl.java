@@ -23,8 +23,8 @@ public class CrashedServiceImpl extends CrashedServiceGrpc.CrashedServiceImplBas
             String clientStringRequest = request.getID();
             System.out.println("[FROM CLIENT] Robot: " + clientStringRequest+ " crashed!!!");
             removeRobot(new Robot(request.getID(),request.getAddress(),request.getPort()),robotList);
-            Maintenance.increaseConsensus(); //check later on if it useful
-            LaunchRobot.getMaintenance().notifyMaintenance();
+            //Maintenance.increaseConsensus(); //check later on if it useful
+            //LaunchRobot.getMaintenance().notifyMaintenance();
             System.out.println("Sending the response to the client...\n");
             responseObserver.onNext(CrashedServiceOuterClass.CrashedResponse.newBuilder().setResponse(GRPCServer.getID()+": removed from my list").build());
             responseObserver.onCompleted();

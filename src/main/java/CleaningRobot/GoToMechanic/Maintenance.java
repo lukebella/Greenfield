@@ -53,7 +53,7 @@ public class Maintenance extends Thread {
                     grpcClient.maintenance(partialRobotList, currentTimestamp);
                     while(true) {
 
-                        if (consensus>=partialRobotList.size()-1) {
+                        if (consensus==partialRobotList.size()-1) {
                             intoMechanic=true;
                             System.out.println("Mechanic...");
                             Thread.sleep(getMaintenance());  //Mechanic
