@@ -135,7 +135,7 @@ public class GRPCClient {
                                 }
 
                                 public void onError(Throwable throwable) {
-                                    //System.out.println("ON ERROR: " + sr.getRobotList().get(index) + " CRASHED");
+                                    System.out.println("ON ERROR: " + sr.getRobotList().get(index) + " CRASHED");
                                     Robot robotToDelete = sr.getRobotList().get(index);
                                     remove(robotToDelete.getID());
                                     System.out.println(robotToDelete + " index: " + index);
@@ -172,7 +172,6 @@ public class GRPCClient {
         //synchronized (sr.getRobotList()) {
             for (int robot = 0; robot < sr.getRobotList().size(); robot++) {
                 if (!(r.getID().equals(sr.getRobotList().get(robot).getID()))) {
-                    //System.out.println(cr);
                     final ManagedChannel channel = ManagedChannelBuilder.forTarget(sr.getRobotList().get(robot).getAddress() +
                             ":" + sr.getRobotList().get(robot).getPort()).usePlaintext().build();
 

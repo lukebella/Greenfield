@@ -1,5 +1,7 @@
 package CleaningRobot.GRPC;
 
+import CleaningRobot.GoToMechanic.Maintenance;
+import CleaningRobot.Initialization.LaunchRobot;
 import CleaningRobot.Initialization.Robot;
 import com.example.grpc.CrashedServiceGrpc;
 import com.example.grpc.CrashedServiceOuterClass;
@@ -20,7 +22,9 @@ public class CrashedServiceImpl extends CrashedServiceGrpc.CrashedServiceImplBas
         synchronized (robotList) {
             String clientStringRequest = request.getID();
             System.out.println("[FROM CLIENT] Robot: " + clientStringRequest+ " crashed!!!");
-            removeRobot(new Robot(request.getID(),request.getAddress(),request.getPort()),robotList);  //check later on if it useful
+            removeRobot(new Robot(request.getID(),request.getAddress(),request.getPort()),robotList);
+            Maintenance.increaseConsensus(); //check later on if it useful
+            LaunchRobot.getMaintenance().notifyMaintenance();
             System.out.println("Sending the response to the client...\n");
             responseObserver.onNext(CrashedServiceOuterClass.CrashedResponse.newBuilder().setResponse(GRPCServer.getID()+": removed from my list").build());
             responseObserver.onCompleted();
