@@ -25,13 +25,11 @@ public class Maintenance extends Thread {
     private static final Object lockConsensus;
     private static final Object lockRobotBroken;
     private static final Object lockIntoMechanic;
-    //private static final Object lockStopCondition;
 
     static {
         lockConsensus = new Object();
         lockRobotBroken = new Object();
         lockIntoMechanic = new Object();
-        //lockStopCondition= new Object();
     }
 
     public Maintenance(GRPCClient grpcClient, List<Robot> currentRobotList) {
@@ -54,7 +52,8 @@ public class Maintenance extends Thread {
                     currentTimestamp=System.currentTimeMillis();
                     grpcClient.maintenance(partialRobotList, currentTimestamp);
                     while(true) {
-                        if (consensus==partialRobotList.size()-1) {
+
+                        if (consensus>=partialRobotList.size()-1) {
                             intoMechanic=true;
                             System.out.println("Mechanic...");
                             Thread.sleep(getMaintenance());  //Mechanic
@@ -69,6 +68,7 @@ public class Maintenance extends Thread {
                         }
                         else {
                             System.out.println("Waiting mechanic...");
+                            System.out.println("Cons: "+consensus+"/Robot size: "+(partialRobotList.size()-1));
                             synchronized (this){wait();}}
                     }
 

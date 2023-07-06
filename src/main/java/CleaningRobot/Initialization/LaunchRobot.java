@@ -22,6 +22,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.List;
 
 public class LaunchRobot {
 
@@ -62,7 +63,7 @@ public class LaunchRobot {
         simulator.start();
         avgConsumer.start();
         PollutionPublisher pp = new PollutionPublisher(r.getID(), District.getDistrict(sr.getCell()), avgConsumer.getAverageList());
-        //pp.start();
+        //pp.start();  //TODO
 
         //Check heartbeats of the other robots
         SendHeartbeat sh = new SendHeartbeat(grpcClient);
@@ -194,5 +195,7 @@ public class LaunchRobot {
             return m;
         }
     }
+
+
 }
 

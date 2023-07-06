@@ -24,10 +24,11 @@ public class GRPCClient {
     Robot r;
     StartRobotListResponse sr;
     Cell c;
+
     public GRPCClient(Robot r, StartRobotListResponse sr, Cell c) {
         this.r = r;
         this.sr = sr;
-        this.c=c;
+        this.c = c;
     }
 
     //Presenting to all other robots
@@ -83,7 +84,7 @@ public class GRPCClient {
 
                     GoodbyeServiceGrpc.GoodbyeServiceStub stub = GoodbyeServiceGrpc.newStub(channel);
 
-                    int index=robot;
+                    int index = robot;
                     stub.goodbye(GoodbyeRequest.newBuilder().setID(r.getID())
                                     .setAddress(r.getAddress())
                                     .setPort(r.getPort()).build(),
@@ -119,8 +120,8 @@ public class GRPCClient {
     }
 
     //Check Heartbeats
-    public void heartbeating() {
-        synchronized (sr.getRobotList()) {
+    public synchronized void heartbeating() {
+        //synchronized (sr.getRobotList()) {
             for (int robot = 0; robot < sr.getRobotList().size(); robot++) {
                 if (!(r.getID().equals(sr.getRobotList().get(robot).getID()))) {
 
@@ -134,19 +135,20 @@ public class GRPCClient {
                                 }
 
                                 public void onError(Throwable throwable) {
-                                    System.out.println("ON ERROR: "+sr.getRobotList().get(index)+" CRASHED");
+                                    //System.out.println("ON ERROR: " + sr.getRobotList().get(index) + " CRASHED");
                                     Robot robotToDelete = sr.getRobotList().get(index);
-                                    sr.getRobotList().remove(index);
+                                    remove(robotToDelete.getID());
+                                    System.out.println(robotToDelete + " index: " + index);
                                     sendCrashedToAll(robotToDelete);
-                                    ClientResponse crashedToServer = LaunchRobot.deleteRequest(LaunchRobot.getClient(), LaunchRobot.getServerAddress()+getRemoveRobot(),robotToDelete);
+                                    ClientResponse crashedToServer = LaunchRobot.deleteRequest(LaunchRobot.getClient(), LaunchRobot.getServerAddress() + getRemoveRobot(), robotToDelete);
                                     System.out.println(crashedToServer.toString());
-                                    if (LaunchRobot.isFixRobot()) {
+                                    if (Maintenance.isRobotBroken()) {
                                         System.out.println("Crashed robot, remove from the waiting list");
-                                        MechanicServiceImpl.removeFromWaitingList(sr.getRobotList().get(index).getID());
+                                        MechanicServiceImpl.removeFromWaitingList(robotToDelete.getID());
                                         Maintenance.increaseConsensus();
                                         LaunchRobot.getMaintenance().notifyMaintenance();
                                     }
-                                    //se sono rotto devi togliere dalla lista della waiting quello che è morto, aumentare tutti e Notify
+
                                 }
 
                                 public void onCompleted() {
@@ -162,12 +164,12 @@ public class GRPCClient {
                 }
 
             }
-        }
+        //}
     }
 
     //Tells to the other robots which robot is crashed
     private void sendCrashedToAll(Robot cr) {
-        synchronized (sr.getRobotList()) {
+        //synchronized (sr.getRobotList()) {
             for (int robot = 0; robot < sr.getRobotList().size(); robot++) {
                 if (!(r.getID().equals(sr.getRobotList().get(robot).getID()))) {
                     //System.out.println(cr);
@@ -201,7 +203,7 @@ public class GRPCClient {
                 }
 
             }
-        }
+        //}
 
     }
 
@@ -210,11 +212,11 @@ public class GRPCClient {
         synchronized (partialRobotList) {
             for (int robot = 0; robot < partialRobotList.size(); robot++) {
                 if (!(r.getID().equals(partialRobotList.get(robot).getID()))) {
-                    System.out.println("Contacting robot: "+partialRobotList.get(robot).getID());
+                    System.out.println("Contacting robot: " + partialRobotList.get(robot).getID());
                     final ManagedChannel channel = ManagedChannelBuilder.forTarget(partialRobotList.get(robot).getAddress() +
                             ":" + partialRobotList.get(robot).getPort()).usePlaintext().build();
                     MechanicServiceGrpc.MechanicServiceStub stub = MechanicServiceGrpc.newStub(channel);
-                    int index=robot;
+                    int index = robot;
                     stub.mechanic(MechanicRequest.newBuilder()
                                     .setID(r.getID())
                                     .setAddress(r.getAddress())
@@ -223,14 +225,13 @@ public class GRPCClient {
                                     .build(),
                             new StreamObserver<MechanicResponse>() {
                                 public void onNext(MechanicResponse mechanicResponse) {
-                                    if(mechanicResponse.getResponse().equals("NO")) {
+                                    if (mechanicResponse.getResponse().equals("NO")) {
 
-                                    }
-                                    else if(mechanicResponse.getResponse().equals("OK")) {
+                                    } else if (mechanicResponse.getResponse().equals("OK")) {
                                         Maintenance.increaseConsensus();
                                         LaunchRobot.getMaintenance().notifyMaintenance();
                                     }
-                                    System.out.println("[FROM SERVER "+partialRobotList.get(index).getID()+ "] " + mechanicResponse.getResponse());
+                                    System.out.println("[FROM SERVER " + partialRobotList.get(index).getID() + "] " + mechanicResponse.getResponse());
                                 }
 
                                 public void onError(Throwable throwable) {
@@ -265,14 +266,14 @@ public class GRPCClient {
                     final ManagedChannel channel = ManagedChannelBuilder.forTarget(MechanicServiceImpl.getWaitingList().get(robot).getAddress() +
                             ":" + MechanicServiceImpl.getWaitingList().get(robot).getPort()).usePlaintext().build();
                     MaintenanceOverServiceGrpc.MaintenanceOverServiceStub stub = MaintenanceOverServiceGrpc.newStub(channel);
-                    int index=robot;
+                    int index = robot;
                     stub.maintenanceOver(MaintenanceOver.MaintenanceOverRequest.newBuilder()
                                     .setOk("OK")
                                     .build(),
                             new StreamObserver<MaintenanceOver.MaintenanceOverResponse>() {
                                 public void onNext(MaintenanceOver.MaintenanceOverResponse maintenanceOverResponse) {
-                                    System.out.println("Maintenance Over: Robot "+MechanicServiceImpl.getWaitingList().get(index).getID()+" complete fixing");
-                                    System.out.println("[FROM SERVER] "+maintenanceOverResponse.getReceived());
+                                    System.out.println("Maintenance Over: Robot " + MechanicServiceImpl.getWaitingList().get(index).getID() + " complete fixing");
+                                    System.out.println("[FROM SERVER] " + maintenanceOverResponse.getReceived());
                                 }
 
                                 public void onError(Throwable throwable) {
@@ -294,7 +295,21 @@ public class GRPCClient {
             }
         }
 
+
     }
+
+    public void remove(String ID) {
+        synchronized (sr.getRobotList()) {
+            for (int i = 0; i < sr.getRobotList().size(); i++) {
+                if (sr.getRobotList().get(i).getID().equals(ID)) {
+                    sr.getRobotList().remove(i);
+                    break;
+                }
+            }
+        }
+
+    }
+
 }
 
 
