@@ -150,12 +150,11 @@ public class LaunchRobot {
 
 
     public static StartRobotListResponse initializeRobot(Client client, String serverAddress, String path, Robot robot) {
-        System.out.println("Launching new robot with ID: "+robot.getID());
+        System.out.println("Launching to the server the new robot with ID: "+robot.getID());
         ClientResponse clientResponse = postRequest(client,serverAddress+path,robot);
-        System.out.println(clientResponse.toString());
         StartRobotListResponse sr = clientResponse.getEntity(StartRobotListResponse.class);
-        System.out.println("List for saying hello: "+sr.getRobotList());
-        System.out.println(clientResponse.toString());
+        //System.out.println("List for saying hello: "+sr.getRobotList());
+        System.out.println(clientResponse);
         return sr;
     }
 
