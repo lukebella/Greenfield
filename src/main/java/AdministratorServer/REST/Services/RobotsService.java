@@ -57,7 +57,7 @@ public class RobotsService {
         }
 
         else {
-            System.out.println("Robot already moved or never existed");
+            System.out.println("Robot already removed or never existed");
             return Response.status(Response.Status.NOT_ACCEPTABLE).build();   //the system blocks..
         }
     }

@@ -86,7 +86,7 @@ public class LaunchRobot {
                     else {
                         setFixRobot(true);
                         System.out.println("Trying to fix you");
-
+                        m.notifyMaintenance();
                     }
                     break;
                 //Quitting...
