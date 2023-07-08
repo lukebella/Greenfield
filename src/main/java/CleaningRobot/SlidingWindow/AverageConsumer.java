@@ -12,28 +12,24 @@ public class AverageConsumer extends Thread{
     private static List<Double> averageList;
     private volatile boolean stopCondition=false;
 
-    public AverageConsumer(SlidingWindow sw, String ID, int district) throws MqttException {
+    public AverageConsumer(SlidingWindow sw, String ID, int district)  {
         this.sw= sw;
-        averageList = new ArrayList<Double>();
+        averageList = new ArrayList<>();
     }
 
     public void run() {
         while (!stopCondition) {
             //put average in the list
-            averageList.add(makeAvg(sw.readAllAndClean()));
+                averageList.add(makeAvg(sw.readAllAndClean()));
         }
     }
 
-    private double makeAvg(List<Measurement> m) {
-        synchronized (m) {
-            return m.stream().mapToDouble(Measurement::getValue).average().orElse(Double.NaN);
-        }
+    private double makeAvg(List<Measurement> measures) {
+        return measures.stream().mapToDouble(Measurement::getValue).average().orElse(Double.NaN);
     }
 
     public List<Double> getAverageList() {
-        synchronized (averageList) {
-            return averageList;
-        }
+        return averageList;
     }
 
     public void setStopCondition(boolean stopCondition) {

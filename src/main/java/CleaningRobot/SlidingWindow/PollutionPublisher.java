@@ -16,9 +16,9 @@ public class PollutionPublisher extends Thread{
     private String broker;
     private String clientId;
     private String topic = getTopic(); // remember that {i} is the district of the robot
-    private int qos;
+    private final int qos;
     private volatile boolean stopCondition = false;
-    private List<Double> averageList;
+    private final List<Double> averageList;
 
 
     public PollutionPublisher(String clientId, int district, List<Double> averageList) throws MqttException {
@@ -42,10 +42,9 @@ public class PollutionPublisher extends Thread{
             System.out.println(clientId + " Connected");
             System.out.println("AverageList: "+averageList);
             while(!stopCondition) {
+                Thread.sleep(15000);
                 synchronized (averageList) {
-                    Thread.sleep(15000);
-                    System.out.println("ID: " + this.clientId + "; Timestamp: " + System.currentTimeMillis() + "; AverageList: " + String.valueOf(averageList));
-
+                    System.out.println("ID: " + this.clientId + "; Timestamp: " + System.currentTimeMillis() + "; AverageList: " + averageList);
                     String payload = new Gson().toJson(new Payload(this.clientId, System.currentTimeMillis(), averageList));
                     MqttMessage message = new MqttMessage(payload.getBytes());
                     message.setQos(qos);

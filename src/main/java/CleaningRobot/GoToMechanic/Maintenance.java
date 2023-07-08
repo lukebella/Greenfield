@@ -39,16 +39,16 @@ public class Maintenance extends Thread {
 
     @Override
     public void run() {
+
         while(!stopCondition) {
             try {
-
                 System.out.println("Trying to enter to the mechanic...");
                 if ((new Random().nextInt(10) == 9) || LaunchRobot.isFixRobot()) {  //10% chance to be subject of malfunctions
                     System.out.println("Robot Broken");
                     //make GRPC
                     setRobotBroken(true);
                     consensus=0;
-                    List<Robot> partialRobotList = new ArrayList<Robot>(currentRobotList);
+                    List<Robot> partialRobotList = new ArrayList<>(currentRobotList);
                     currentTimestamp=System.currentTimeMillis();
                     grpcClient.maintenance(partialRobotList, currentTimestamp);
                     while(true) {
@@ -73,7 +73,7 @@ public class Maintenance extends Thread {
                     }
 
                 }
-                Thread.sleep(getMechanic()); //10 second chance to go to the mechanic
+                Thread.sleep(getMechanic());  //10 second chance to go to the mechanic
 
             } catch (InterruptedException e) {
                 System.out.println("SLEEP INTERRUPTED DUE TO FIX INSERTED BY THE USER");
@@ -105,14 +105,12 @@ public class Maintenance extends Thread {
         synchronized(lockConsensus) {
             Maintenance.consensus ++;
         }
-
     }
 
     public static boolean isIntoMechanic() {
         synchronized (lockIntoMechanic) {
             return intoMechanic;
         }
-
     }
 
     public static long getCurrentTimestamp() {
@@ -122,16 +120,11 @@ public class Maintenance extends Thread {
     public synchronized void notifyMaintenance() { notify();}
 
     public boolean isStopCondition() {
-        //synchronized (lockStopCondition) {
             return stopCondition;
-        //}
-
     }
 
     public static void setStopCondition(boolean stopCondition) {
-        //synchronized (lockStopCondition) {
             Maintenance.stopCondition = stopCondition;
-        //}
     }
 
 }

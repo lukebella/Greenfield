@@ -26,7 +26,7 @@ public class CellFactory {
         }*/
     }
 
-    private static Cell makeCell(int district) {  //TODO syncr?
+    private static Cell makeCell(int district) {
         synchronized (RESTServer.getCounterCell()) {
             int rowCell = new Random().nextInt(Grid.row/2) + ((district==1 || district==4)?0 :5);
             int columnCell = new Random().nextInt(Grid.column/2) + ((district==1 || district==2)?0 :5);

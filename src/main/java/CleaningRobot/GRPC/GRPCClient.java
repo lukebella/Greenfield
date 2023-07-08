@@ -120,13 +120,14 @@ public class GRPCClient {
     }
 
     //Check Heartbeats
-    public synchronized void heartbeating() {
+    public void heartbeating() {
+        synchronized (sr.getRobotList()) {  //TODO
             for (int robot = 0; robot < sr.getRobotList().size(); robot++) {
                 if (!(r.getID().equals(sr.getRobotList().get(robot).getID()))) {
 
                     final ManagedChannel channel = ManagedChannelBuilder.forTarget(sr.getRobotList().get(robot).getAddress() +
                             ":" + sr.getRobotList().get(robot).getPort()).usePlaintext().build();
-                    int index = robot;
+                    Robot robotToDelete = sr.getRobotList().get(robot);
                     HeartbeatServiceGrpc.HeartbeatServiceStub stub = HeartbeatServiceGrpc.newStub(channel);
                     stub.heartbeat(HeartbeatRequest.newBuilder().build(),
                             new StreamObserver<HeartbeatResponse>() {
@@ -134,10 +135,11 @@ public class GRPCClient {
                                 }
 
                                 public void onError(Throwable throwable) {
-                                        System.out.println("ON ERROR: " + sr.getRobotList().get(index) + " CRASHED");
-                                        Robot robotToDelete = sr.getRobotList().get(index);
+                                    synchronized (sr.getRobotList()) {
+                                        System.out.println("ON ERROR: " + robotToDelete + " CRASHED");
+
                                         remove(robotToDelete.getID());
-                                        System.out.println(robotToDelete + " index: " + index);
+                                        //System.out.println(robotToDelete + " index: " + index);
                                         sendCrashedToAll(robotToDelete);
                                         ClientResponse crashedToServer = LaunchRobot.deleteRequest(LaunchRobot.getClient(), LaunchRobot.getServerAddress() + getRemoveRobot(), robotToDelete);
                                         System.out.println(crashedToServer.toString());
@@ -147,6 +149,7 @@ public class GRPCClient {
                                             Maintenance.increaseConsensus();
                                             LaunchRobot.getMaintenance().notifyMaintenance();
                                         }
+                                    }
 
                                 }
 
@@ -163,11 +166,11 @@ public class GRPCClient {
                 }
 
             }
+       }
     }
 
-    //Tells to the other robots which robot is crashed
-    private synchronized void sendCrashedToAll(Robot cr) {
-        //synchronized (sr.getRobotList()) {
+    //Tells to the other robots which robot is crashed (not necessary synchronized because it's only used in the method above)
+    private void sendCrashedToAll(Robot cr) {
             for (int robot = 0; robot < sr.getRobotList().size(); robot++) {
                 if (!(r.getID().equals(sr.getRobotList().get(robot).getID()))) {
                     final ManagedChannel channel = ManagedChannelBuilder.forTarget(sr.getRobotList().get(robot).getAddress() +
@@ -200,12 +203,11 @@ public class GRPCClient {
                 }
 
             }
-        //}
 
     }
 
     //Mechanic
-    public synchronized void maintenance(List<Robot> partialRobotList, long whenImBroken) {
+    public void maintenance(List<Robot> partialRobotList, long whenImBroken) {
         synchronized (partialRobotList) {
             for (int robot = 0; robot < partialRobotList.size(); robot++) {
                 if (!(r.getID().equals(partialRobotList.get(robot).getID()))) {
@@ -294,14 +296,14 @@ public class GRPCClient {
     }
 
     public synchronized void remove(String ID) {
-        synchronized (sr.getRobotList()) {
+        //synchronized (sr.getRobotList()) {
             for (int i = 0; i < sr.getRobotList().size(); i++) {
                 if (sr.getRobotList().get(i).getID().equals(ID)) {
                     sr.getRobotList().remove(i);
                     break;
                 }
             }
-        }
+       // }
 
     }
 

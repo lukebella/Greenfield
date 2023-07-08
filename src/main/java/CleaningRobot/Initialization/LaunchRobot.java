@@ -22,12 +22,11 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.List;
 
 public class LaunchRobot {
 
-    private static Client client = Client.create();
-    private static String serverAddress = "http://"+getAdminServerAddress()+":"+getServerPort();
+    private static final Client client = Client.create();
+    private static final String serverAddress = "http://"+getAdminServerAddress()+":"+getServerPort();
     private static ClientResponse clientResponse = null;
     private static final String welcome = getPathWelcome();
     private static final String addRobot = getPathAddRobot();
@@ -38,7 +37,7 @@ public class LaunchRobot {
 
     private static final Object lockFixRobot = new Object();
 
-    public static void main(String args[]) throws MqttException, IOException {
+    public static void main(String[] args) throws MqttException, IOException {
 
         //Welcome page
         clientResponse = getRequest(client,serverAddress+welcome);
@@ -190,9 +189,7 @@ public class LaunchRobot {
 
 
     public static Maintenance getMaintenance() {
-        synchronized (m) {
-            return m;
-        }
+        return m;
     }
 
 
