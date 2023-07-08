@@ -91,8 +91,8 @@ public class GRPCClient {
                             new StreamObserver<GoodbyeResponse>() {
                                 public void onNext(GoodbyeResponse goodbyeResponse) {
                                     System.out.println("[FROM SERVER] " + goodbyeResponse.getResponse());
-                                    if (LaunchRobot.isFixRobot()) {
-                                        System.out.println("Crashed robot, remove from the waiting list");
+                                    if (Maintenance.isRobotBroken()) {
+                                        System.out.println("Goodbye:: Robot leaves, remove from the waiting list");
                                         MechanicServiceImpl.removeFromWaitingList(sr.getRobotList().get(index).getID());
                                         Maintenance.increaseConsensus();
                                         LaunchRobot.getMaintenance().notifyMaintenance();
@@ -121,7 +121,6 @@ public class GRPCClient {
 
     //Check Heartbeats
     public synchronized void heartbeating() {
-        //synchronized (sr.getRobotList()) {
             for (int robot = 0; robot < sr.getRobotList().size(); robot++) {
                 if (!(r.getID().equals(sr.getRobotList().get(robot).getID()))) {
 
@@ -135,19 +134,19 @@ public class GRPCClient {
                                 }
 
                                 public void onError(Throwable throwable) {
-                                    System.out.println("ON ERROR: " + sr.getRobotList().get(index) + " CRASHED");
-                                    Robot robotToDelete = sr.getRobotList().get(index);
-                                    remove(robotToDelete.getID());
-                                    System.out.println(robotToDelete + " index: " + index);
-                                    sendCrashedToAll(robotToDelete);
-                                    ClientResponse crashedToServer = LaunchRobot.deleteRequest(LaunchRobot.getClient(), LaunchRobot.getServerAddress() + getRemoveRobot(), robotToDelete);
-                                    System.out.println(crashedToServer.toString());
-                                    if (Maintenance.isRobotBroken()) {
-                                        System.out.println("Crashed robot, remove from the waiting list");
-                                        MechanicServiceImpl.removeFromWaitingList(robotToDelete.getID());
-                                        Maintenance.increaseConsensus();
-                                        LaunchRobot.getMaintenance().notifyMaintenance();
-                                    }
+                                        System.out.println("ON ERROR: " + sr.getRobotList().get(index) + " CRASHED");
+                                        Robot robotToDelete = sr.getRobotList().get(index);
+                                        remove(robotToDelete.getID());
+                                        System.out.println(robotToDelete + " index: " + index);
+                                        sendCrashedToAll(robotToDelete);
+                                        ClientResponse crashedToServer = LaunchRobot.deleteRequest(LaunchRobot.getClient(), LaunchRobot.getServerAddress() + getRemoveRobot(), robotToDelete);
+                                        System.out.println(crashedToServer.toString());
+                                        if (Maintenance.isRobotBroken()) {
+                                            System.out.println("Crashed robot, remove from the waiting list");
+                                            MechanicServiceImpl.removeFromWaitingList(robotToDelete.getID());
+                                            Maintenance.increaseConsensus();
+                                            LaunchRobot.getMaintenance().notifyMaintenance();
+                                        }
 
                                 }
 
@@ -164,7 +163,6 @@ public class GRPCClient {
                 }
 
             }
-        //}
     }
 
     //Tells to the other robots which robot is crashed
@@ -207,7 +205,7 @@ public class GRPCClient {
     }
 
     //Mechanic
-    public void maintenance(List<Robot> partialRobotList, long whenImBroken) {
+    public synchronized void maintenance(List<Robot> partialRobotList, long whenImBroken) {
         synchronized (partialRobotList) {
             for (int robot = 0; robot < partialRobotList.size(); robot++) {
                 if (!(r.getID().equals(partialRobotList.get(robot).getID()))) {
@@ -260,14 +258,11 @@ public class GRPCClient {
         synchronized (MechanicServiceImpl.getWaitingList()) {
             System.out.println("GRPCClient::maintenanceOver :"+MechanicServiceImpl.getWaitingList());
             for (int robot = 0; robot < MechanicServiceImpl.getWaitingList().size(); robot++) {
-                System.out.println(MechanicServiceImpl.getWaitingList().get(robot));
                 if (!(r.getID().equals(MechanicServiceImpl.getWaitingList().get(robot).getID()))) {
 
                     final ManagedChannel channel = ManagedChannelBuilder.forTarget(MechanicServiceImpl.getWaitingList().get(robot).getAddress() +
                             ":" + MechanicServiceImpl.getWaitingList().get(robot).getPort()).usePlaintext().build();
                     MaintenanceOverServiceGrpc.MaintenanceOverServiceStub stub = MaintenanceOverServiceGrpc.newStub(channel);
-                    int index = robot;
-
                     stub.maintenanceOver(MaintenanceOver.MaintenanceOverRequest.newBuilder()
                                     .setOk("OK")
                                     .build(),
@@ -298,7 +293,7 @@ public class GRPCClient {
 
     }
 
-    public void remove(String ID) {
+    public synchronized void remove(String ID) {
         synchronized (sr.getRobotList()) {
             for (int i = 0; i < sr.getRobotList().size(); i++) {
                 if (sr.getRobotList().get(i).getID().equals(ID)) {

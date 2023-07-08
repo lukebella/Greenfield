@@ -8,7 +8,7 @@ public class RobotParameters {
 
     private static final int maxRobot = 100;
     private static List<Integer> usedPorts = new ArrayList<Integer>();
-    private static final int heartbeat =1000;
+    private static final int heartbeat =3000;
     private static final int mechanic = 10000;
     private static final int maintenance = 10000;
 
