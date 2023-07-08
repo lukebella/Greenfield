@@ -41,7 +41,7 @@ public class Maintenance extends Thread {
     public void run() {
         while(!stopCondition) {
             try {
-                Thread.sleep(getMechanic());  //10 second chance to go to the mechanic
+
                 System.out.println("Trying to enter to the mechanic...");
                 if ((new Random().nextInt(10) == 9) || LaunchRobot.isFixRobot()) {  //10% chance to be subject of malfunctions
                     System.out.println("Robot Broken");
@@ -73,9 +73,11 @@ public class Maintenance extends Thread {
                     }
 
                 }
+                Thread.sleep(getMechanic()); //10 second chance to go to the mechanic
 
             } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                System.out.println("SLEEP INTERRUPTED DUE TO FIX INSERTED BY THE USER");
+                //throw new RuntimeException(e);
             }
         }
     }
