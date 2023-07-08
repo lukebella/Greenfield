@@ -151,8 +151,11 @@ public class LaunchRobot {
     public static StartRobotListResponse initializeRobot(Client client, String serverAddress, String path, Robot robot) {
         System.out.println("Launching to the server the new robot with ID: "+robot.getID());
         ClientResponse clientResponse = postRequest(client,serverAddress+path,robot);
+        if (clientResponse.getStatus()==406) {
+            System.out.println("ID ALREADY TAKEN! PLEASE RE-RUN YOUR PROGRAM");
+            System.exit(0);
+        }
         StartRobotListResponse sr = clientResponse.getEntity(StartRobotListResponse.class);
-        //System.out.println("List for saying hello: "+sr.getRobotList());
         System.out.println(clientResponse);
         return sr;
     }
